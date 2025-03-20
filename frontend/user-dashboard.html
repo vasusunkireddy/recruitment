@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>User Dashboard - RecruitPro</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        body {
+            background: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            flex: 1;
+            width: 100%;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 1rem 0;
+            position: fixed;
+            height: 100vh;
+            transition: width 0.3s ease;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        .sidebar.collapsed {
+            width: 70px;
+        }
+        .sidebar .logo {
+            text-align: center;
+            padding: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ecf0f1;
+        }
+        .sidebar .logo img {
+            width: 40px;
+            height: 40px;
+            max-width: 100%;
+            object-fit: contain;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar .logo img:hover {
+            opacity: 0.8;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            margin: 0.5rem 0;
+        }
+        .sidebar ul li a {
+            color: #d1d9e6;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        .sidebar ul li a:hover, .sidebar ul li a.active {
+            background: #34495e;
+            color: #fff;
+        }
+        .sidebar ul li a i {
+            margin-right: 0.5rem;
+        }
+        .sidebar-toggle {
+            display: none;
+            position: absolute;
+            top: 1rem;
+            right: -40px;
+            background: #2c3e50;
+            border: none;
+            color: #ecf0f1;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 0 5px 5px 0;
+            transition: all 0.3s ease;
+        }
+        .sidebar-toggle:hover {
+            background: #34495e;
+        }
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: block;
+            }
+            .sidebar {
+                transform: translateX(-250px);
+                transition: transform 0.3s ease;
+            }
+            .sidebar.collapsed {
+                transform: translateX(0);
+                width: 250px;
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 1rem;
+            }
+            .main-content.collapsed {
+                margin-left: 0;
+            }
+        }
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 1.5rem 2rem;
+            transition: margin-left 0.3s ease;
+            background: #f9f9f9;
+            width: 100%;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .main-content.collapsed {
+            margin-left: 70px;
+            width: 100%;
+        }
+        .header {
+            background: #fff;
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+        .header .welcome {
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+        .header .welcome span {
+            color: #3498db;
+            font-weight: bold;
+        }
+        .header .profile {
+            display: flex;
+            align-items: center;
+        }
+        .header .profile span {
+            color: #2c3e50;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        .header .profile img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid #3498db;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        .header .profile img:hover {
+            opacity: 0.8;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+        .card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            text-align: center;
+            transition: transform 0.2s ease;
+            border-left: 4px solid #3498db;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card h3 {
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .card p {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #34495e;
+        }
+        .job-card .card {
+            border: 1px solid #e9ecef;
+            text-align: left;
+            padding: 1rem;
+            border-left: none;
+        }
+        .job-card h5 {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .job-card p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .job-card small {
+            color: #7f8c8d;
+            font-size: 0.8rem;
+        }
+        .table {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            width: 100%;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        th {
+            background: #f8f9fd;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background: #fafbfd;
+        }
+        .btn-primary {
+            background: #3498db;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        .form-control {
+            border-radius: 5px;
+            padding: 0.7rem;
+            border: 1px solid #ced4da;
+            font-size: 0.9rem;
+        }
+        .form-control:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+        .badge-success { background-color: #2ecc71; color: #fff; }
+        .badge-warning { background-color: #f1c40f; color: #fff; }
+        .badge-danger { background-color: #e74c3c; color: #fff; }
+        .invalid-feedback {
+            display: none;
+            font-size: 0.8rem;
+            color: #e74c3c;
+        }
+        .was-validated .form-control:invalid ~ .invalid-feedback {
+            display: block;
+        }
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            color: #3498db;
+            background: none;
+            border: 1px solid #3498db;
+            padding: 0.5rem 1.25rem;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .btn-back:hover {
+            background: #3498db;
+            color: #fff;
+        }
+        .alert {
+            border-radius: 5px;
+            padding: 0.75rem;
+            margin-top: 1rem;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-250px);
+            }
+            .sidebar.collapsed {
+                transform: translateX(0);
+                width: 250px;
+            }
+            .sidebar-toggle {
+                display: block;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+                width: 100%;
+            }
+            .header {
+                padding: 0.75rem 1rem;
+            }
+            .header .welcome {
+                font-size: 1rem;
+            }
+            .header .profile img {
+                width: 30px;
+                height: 30px;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                padding: 1rem;
+            }
+            .card h3 {
+                font-size: 1rem;
+            }
+            .card p {
+                font-size: 1.5rem;
+            }
+            .table th, .table td {
+                padding: 0.5rem;
+                font-size: 0.85rem;
+            }
+            .btn-primary {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+            }
+            .form-control {
+                font-size: 0.85rem;
+            }
+            .job-card .card {
+                padding: 0.75rem;
+            }
+            .job-card h5 {
+                font-size: 1rem;
+            }
+            .job-card p {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+            <div class="logo">
+                <img src="recruitpro-logo.png" alt="RecruitPro Logo" onerror="this.src='https://via.placeholder.com/40?text=Logo';">
+            </div>
+            <ul>
+                <li><a href="#dashboard" class="active" data-section="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="#opportunities" data-section="opportunities"><i class="fas fa-briefcase"></i> Jobs & Interns</a></li>
+                <li><a href="#applications" data-section="applications"><i class="fas fa-paperclip"></i> Applications</a></li>
+                <li><a href="#profile" data-section="profile"><i class="fas fa-user"></i> Profile</a></li>
+                <li><a href="#" id="logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content" id="mainContent">
+            <div class="header">
+                <div class="welcome">Welcome, <span id="user-name"></span></div>
+                <div class="profile">
+                    <span id="user-email"></span>
+                    <img id="userProfileImg" src="https://via.placeholder.com/35?text=User" alt="Profile">
+                </div>
+            </div>
+
+            <div id="dashboard" class="dashboard-grid section active">
+                <a href="index.html#home" class="btn-back"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                <h2 class="mb-3">User Dashboard</h2>
+                <p class="mb-4">Manage your job applications and opportunities efficiently.</p>
+                <div class="card">
+                    <h3>Total Applications</h3>
+                    <p id="active-apps">0</p>
+                </div>
+                <div class="card">
+                    <h3>Opportunity Matches</h3>
+                    <p id="opportunity-matches">0</p>
+                </div>
+                <div class="card">
+                    <h3>Pending Applications</h3>
+                    <p id="pending-apps">0</p>
+                </div>
+            </div>
+
+            <div id="opportunities" class="section" style="display: none;">
+                <a href="#dashboard" class="btn-back" data-section="dashboard"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                <h2 class="mb-3">Available Jobs & Internships</h2>
+                <div id="opportunities-list" class="row"></div>
+                <div id="apply-form" class="mt-3" style="display: none;">
+                    <h3>Apply for <span id="apply-opportunity-title"></span></h3>
+                    <form id="application-form" class="needs-validation" novalidate>
+                        <input type="hidden" id="opportunity-id" name="opportunityId">
+                        <div class="mb-3">
+                            <label for="full-name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="full-name" name="fullName" required>
+                            <div class="invalid-feedback">Please provide your full name.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="availability" class="form-label">Availability (e.g., Immediate)</label>
+                            <input type="text" class="form-control" id="availability" name="availability" required>
+                            <div class="invalid-feedback">Please provide your availability.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="resume" class="form-label">Upload Resume</label>
+                            <input type="file" class="form-control" id="resume" name="resume" accept=".pdf,.doc,.docx" required>
+                            <div class="invalid-feedback">Please upload a resume (PDF, DOC, or DOCX).</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Application</button>
+                        <div id="apply-alert" class="mt-3" style="display: none;"></div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="applications" class="table section" style="display: none;">
+                <a href="#dashboard" class="btn-back" data-section="dashboard"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                <h2 class="mb-3">My Applications</h2>
+                <table class="table-striped">
+                    <thead>
+                        <tr><th>Opportunity Type</th><th>Title</th><th>Date Applied</th><th>Status</th></tr>
+                    </thead>
+                    <tbody id="applications-table"></tbody>
+                </table>
+            </div>
+
+            <div id="profile" class="card section" style="display: none;">
+                <a href="#dashboard" class="btn-back" data-section="dashboard"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                <h2 class="mb-3">Profile</h2>
+                <p><strong>Email:</strong> <span id="profile-email"></span></p>
+                <p><strong>Applications Submitted:</strong> <span id="profile-apps"></span></p>
+                <p><strong>Account Created:</strong> <span id="profile-created"></span></p>
+                <form id="update-profile-pic-form" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="email-update" class="form-label">Update Email</label>
+                        <input type="email" class="form-control" id="email-update" name="email" required>
+                        <div class="invalid-feedback">Please provide a valid email.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password-update" class="form-label">Update Password</label>
+                        <input type="password" class="form-control" id="password-update" name="password" required>
+                        <div class="invalid-feedback">Please provide a password.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="profile-pic" class="form-label">Change Profile Picture</label>
+                        <input type="file" class="form-control" id="profile-pic" name="profilePic" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                    <div id="profile-pic-alert" class="mt-3" style="display: none;"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const backendUrl = "http://localhost:3000";
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const userId = localStorage.getItem('id');
+            const token = localStorage.getItem('accessToken');
+            const userEmail = localStorage.getItem('email');
+
+            if (!userId || !token) {
+                window.location.replace("index.html#login");
+                return;
+            }
+
+            document.getElementById('user-email').textContent = userEmail;
+            document.getElementById('user-name').textContent = userEmail.split('@')[0];
+            document.getElementById('profile-email').textContent = userEmail;
+            document.getElementById('email-update').value = userEmail;
+            loadProfileImage();
+
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('collapsed');
+            });
+
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.sidebar a[data-section]');
+
+            function showSection(id) {
+                sections.forEach(s => {
+                    s.style.display = 'none';
+                    s.classList.remove('active');
+                });
+                navLinks.forEach(l => l.classList.remove('active'));
+                const section = document.getElementById(id);
+                const link = document.querySelector(`[data-section="${id}"]`);
+                if (section) {
+                    section.style.display = 'block';
+                    section.classList.add('active');
+                    link.classList.add('active');
+                    if (id === 'dashboard') loadDashboard();
+                    if (id === 'opportunities') loadOpportunities();
+                    if (id === 'applications') loadApplications();
+                    if (id === 'profile') loadProfile();
+                }
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', e => {
+                    e.preventDefault();
+                    showSection(link.getAttribute('data-section'));
+                });
+            });
+
+            document.querySelectorAll('.btn-back').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('data-section') || 'index.html#home';
+                    if (targetId.startsWith('index.html')) {
+                        window.location.href = targetId;
+                    } else {
+                        showSection(targetId);
+                    }
+                });
+            });
+
+            document.getElementById('logout').addEventListener('click', async function(e) {
+                e.preventDefault();
+                try {
+                    await axios.post(`${backendUrl}/api/logout`, {}, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    localStorage.clear();
+                    window.location.replace("index.html#home");
+                } catch (error) {
+                    showAlert(document.getElementById('profile-pic-alert'), 'danger', "Logout failed: " + (error.response?.data?.message || "Server error"));
+                }
+            });
+
+            async function loadDashboard() {
+                try {
+                    const apps = await axios.get(`${backendUrl}/api/user/applications`, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    const activeApps = apps.data.filter(app => !app.status || app.status !== 'rejected').length || 0;
+                    const pendingApps = apps.data.filter(app => app.status === 'pending').length || 0;
+                    document.getElementById('active-apps').textContent = activeApps;
+                    document.getElementById('pending-apps').textContent = pendingApps;
+                    const opportunities = await axios.get(`${backendUrl}/api/jobs`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    document.getElementById('opportunity-matches').textContent = opportunities.data.length || 0;
+                } catch (error) {
+                    console.error('Dashboard error:', error);
+                }
+            }
+
+            async function loadOpportunities() {
+                try {
+                    const response = await axios.get(`${backendUrl}/api/jobs`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    const opportunities = response.data;
+                    const opportunitiesList = document.getElementById('opportunities-list');
+                    opportunitiesList.innerHTML = opportunities.length ? '' : '<p class="text-center text-muted">No jobs or internships available.</p>';
+                    opportunities.forEach(opportunity => {
+                        opportunitiesList.innerHTML += `
+                            <div class="col-12 col-md-6 job-card">
+                                <div class="card p-3">
+                                    <h5>${opportunity.title} (${opportunity.type})</h5>
+                                    <p>${opportunity.description.substring(0, 100)}${opportunity.description.length > 100 ? '...' : ''}</p>
+                                    <small>Posted: ${new Date(opportunity.created_at).toLocaleDateString()}</small>
+                                    <button class="btn btn-primary btn-sm apply-btn mt-2" data-id="${opportunity.id}" data-title="${opportunity.title}">Apply</button>
+                                </div>
+                            </div>`;
+                    });
+
+                    document.querySelectorAll('.apply-btn').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const opportunityId = this.getAttribute('data-id');
+                            const opportunityTitle = this.getAttribute('data-title');
+                            document.getElementById('apply-opportunity-title').textContent = opportunityTitle;
+                            document.getElementById('opportunity-id').value = opportunityId;
+                            document.getElementById('apply-form').style.display = 'block';
+                        });
+                    });
+
+                    document.getElementById('application-form').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        const resumeField = document.getElementById('resume');
+                        if (!resumeField.files.length) {
+                            showAlert(document.getElementById('apply-alert'), 'danger', 'Please upload a resume.');
+                            return;
+                        }
+                        if (!this.checkValidity()) {
+                            e.stopPropagation();
+                            this.classList.add('was-validated');
+                            return;
+                        }
+                        const formData = new FormData(this);
+                        formData.append('userId', userId);
+                        try {
+                            const response = await axios.post(`${backendUrl}/api/applications`, formData, {
+                                headers: { Authorization: `Bearer ${token}`, id: userId, 'Content-Type': 'multipart/form-data' }
+                            });
+                            showAlert(document.getElementById('apply-alert'), 'success', response.data.message);
+                            this.reset();
+                            this.classList.remove('was-validated');
+                            document.getElementById('apply-form').style.display = 'none';
+                            loadApplications();
+                            loadDashboard(); // Refresh dashboard count
+                        } catch (error) {
+                            console.error('Application submission error:', error);
+                            showAlert(document.getElementById('apply-alert'), 'danger', error.response?.data?.message || "Application submission failed. Please try again.");
+                        }
+                    });
+                } catch (error) {
+                    console.error('Opportunities error:', error);
+                }
+            }
+
+            async function loadApplications() {
+                try {
+                    const response = await axios.get(`${backendUrl}/api/user/applications`, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    const applications = response.data;
+                    const tbody = document.getElementById('applications-table');
+                    tbody.innerHTML = applications.length ? '' : '<tr><td colspan="4" class="text-center text-muted">No applications submitted.</td></tr>';
+                    applications.forEach(app => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${app.type}</td>
+                                <td>${app.job_title}</td>
+                                <td>${new Date(app.created_at).toLocaleDateString()}</td>
+                                <td><span class="badge ${app.status === 'accepted' ? 'badge-success' : app.status === 'rejected' ? 'badge-danger' : 'badge-warning'}">${app.status || 'pending'}</span></td>
+                            </tr>`;
+                    });
+                    document.getElementById('profile-apps').textContent = applications.length;
+                    loadDashboard(); // Refresh dashboard count
+                } catch (error) {
+                    console.error('Applications error:', error);
+                }
+            }
+
+            async function loadProfile() {
+                try {
+                    const response = await axios.get(`${backendUrl}/api/user/profile`, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    const profile = response.data;
+                    document.getElementById('profile-created').textContent = new Date(profile.created_at).toLocaleDateString();
+                } catch (error) {
+                    console.error('Profile error:', error);
+                }
+            }
+
+            document.getElementById('update-profile-pic-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const emailField = document.getElementById('email-update');
+                const passwordField = document.getElementById('password-update');
+                const profilePicField = document.getElementById('profile-pic');
+
+                // Validate that at least one field is filled
+                if (!emailField.value && !passwordField.value && !profilePicField.files.length) {
+                    showAlert(document.getElementById('profile-pic-alert'), 'danger', 'Please update at least one field.');
+                    return;
+                }
+
+                if (!this.checkValidity()) {
+                    e.stopPropagation();
+                    this.classList.add('was-validated');
+                    return;
+                }
+
+                const formData = new FormData(this);
+                formData.append('userId', userId);
+                try {
+                    const response = await axios.post(`${backendUrl}/api/update-profile`, formData, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId, 'Content-Type': 'multipart/form-data' }
+                    });
+                    showAlert(document.getElementById('profile-pic-alert'), 'success', response.data.message);
+                    if (formData.get('email')) {
+                        localStorage.setItem('email', formData.get('email'));
+                        document.getElementById('user-email').textContent = formData.get('email');
+                        document.getElementById('profile-email').textContent = formData.get('email');
+                    }
+                    loadProfileImage();
+                    loadProfile(); // Refresh profile data
+                    this.reset();
+                    this.classList.remove('was-validated');
+                } catch (error) {
+                    showAlert(document.getElementById('profile-pic-alert'), 'danger', error.response?.data?.message || "Profile update failed.");
+                }
+            });
+
+            async function loadProfileImage() {
+                try {
+                    const response = await axios.get(`${backendUrl}/api/user/profile`, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    const profileImg = document.getElementById('userProfileImg');
+                    if (response.data.profile_pic) {
+                        const imageUrl = `${backendUrl}/${response.data.profile_pic}`;
+                        // Test if the image URL is accessible
+                        const img = new Image();
+                        img.src = imageUrl;
+                        img.onload = () => profileImg.src = imageUrl;
+                        img.onerror = () => profileImg.src = 'https://via.placeholder.com/35?text=User';
+                    } else {
+                        profileImg.src = 'https://via.placeholder.com/35?text=User';
+                    }
+                } catch (error) {
+                    console.error('Profile image load error:', error.response?.data?.message || error.message);
+                    document.getElementById('userProfileImg').src = 'https://via.placeholder.com/35?text=User';
+                }
+            }
+
+            function showAlert(container, type, message) {
+                container.innerHTML = `<div class="alert alert-${type === 'success' ? 'success' : 'danger'}">${message}</div>`;
+                container.style.display = 'block';
+                setTimeout(() => container.style.display = 'none', 5000);
+            }
+
+            const refreshToken = localStorage.getItem('refreshToken');
+            setInterval(async () => {
+                try {
+                    const response = await axios.post(`${backendUrl}/api/refresh-token`, { refreshToken }, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    localStorage.setItem('accessToken', response.data.accessToken);
+                } catch (error) {
+                    console.error('Token refresh failed:', error);
+                    window.location.replace("index.html#login");
+                }
+            }, 30 * 60 * 1000);
+
+            // Load dashboard by default
+            showSection('dashboard');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="RecruitPro - Premier Recruitment Solutions for Top Talent and Employers">
+    <meta name="keywords" content="recruitment, jobs, internships, talent acquisition, career opportunities">
+    <meta name="author" content="RecruitPro Team">
+    <title>RecruitPro - Premier Recruitment Solutions</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        :root {
+            --primary: #1a2b49;
+            --secondary: #007bff;
+            --accent: #00aaff;
+            --light: #f7f9fc;
+            --text: #333333;
+            --success: #28a745;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: var(--light);
+            color: var(--text);
+            line-height: 1.7;
+            margin: 0;
+            font-size: 1rem;
+            overflow-x: hidden;
+        }
+        .navbar {
+            background: var(--primary);
+            padding: 1rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white;
+            display: flex;
+            align-items: center;
+        }
+        .logo {
+            width: 30px;
+            height: 30px;
+            margin-right: 8px;
+        }
+        .navbar-toggler {
+            border: none;
+            color: white;
+        }
+        .nav-link {
+            color: white;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            color: var(--accent);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        .section-container {
+            padding: 2rem 0;
+            min-height: calc(100vh - 120px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--light) 0%, #e9ecef 100%);
+        }
+        .card-section {
+            display: none;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            width: 90%;
+            max-width: 400px;
+            margin: 0 1rem;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .card-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .card-section.wide {
+            max-width: 600px;
+        }
+        #home {
+            background: linear-gradient(rgba(26, 43, 73, 0.8), rgba(26, 43, 73, 0.8)), url('https://source.unsplash.com/1600x900/?recruitment') no-repeat center/cover;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+        #home h2, #home .lead {
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        h2 {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .lead {
+            font-size: 1rem;
+            color: #555;
+        }
+        .btn-primary {
+            background: var(--secondary);
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+        .btn-outline-primary {
+            border-color: var(--secondary);
+            color: var(--secondary);
+            padding: 0.7rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-primary:hover {
+            background: var(--secondary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            color: var(--secondary);
+            background: none;
+            border: 1px solid var(--secondary);
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        .btn-back:hover {
+            background: var(--secondary);
+            color: white;
+        }
+        .form-control {
+            border-radius: 6px;
+            padding: 0.7rem;
+            border: 1px solid #ced4da;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+            outline: none;
+        }
+        footer {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 0;
+            font-size: 0.8rem;
+            margin-top: 2rem;
+        }
+        .social-links a {
+            color: white;
+            margin: 0 0.5rem;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+        .social-links a:hover {
+            color: var(--accent);
+        }
+        .job-card {
+            margin-bottom: 15px;
+        }
+        .job-card .card {
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            transition: box-shadow 0.3s;
+        }
+        .job-card .card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+            .logo {
+                width: 25px;
+                height: 25px;
+            }
+            .nav-link {
+                padding: 0.3rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            .card-section {
+                padding: 1rem;
+                max-width: 100%;
+            }
+            h2 {
+                font-size: 1.2rem;
+            }
+            .btn-primary, .btn-outline-primary {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            #home {
+                padding: 1rem;
+            }
+            .job-card .card {
+                padding: 1rem;
+            }
+            .job-card h5 {
+                font-size: 1rem;
+            }
+            .job-card p {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#home">
+                <img src="recruitpro-logo.png" alt="RecruitPro Logo" class="logo">
+                RecruitPro
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#jobs">Jobs & Interns</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#login">Sign In</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="section-container">
+            <section id="home" class="card-section active">
+                <h2>Welcome to RecruitPro</h2>
+                <p class="lead">Connecting exceptional talent with premier opportunities in jobs and internships.</p>
+                <div class="mt-3">
+                    <a href="#jobs" class="btn btn-primary me-2" data-section="jobs">Explore Opportunities</a>
+                    <a href="#login" class="btn btn-outline-primary" data-section="login">Sign In</a>
+                </div>
+            </section>
+
+            <section id="jobs" class="card-section wide">
+                <a href="#home" class="btn-back" data-section="home"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                <h2>Available Jobs & Internships</h2>
+                <div id="jobs-list" class="row"></div>
+            </section>
+
+            <section id="about" class="card-section">
+                <a href="#home" class="btn-back" data-section="home"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                <h2>About Us</h2>
+                <p>RecruitPro is a trusted leader in professional recruitment, offering top-tier job and internship opportunities.</p>
+            </section>
+
+            <section id="contact" class="card-section">
+                <a href="#home" class="btn-back" data-section="home"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                <h2>Contact Us</h2>
+                <p><i class="fas fa-envelope me-2"></i>info@recruitpro.com</p>
+                <p><i class="fas fa-phone me-2"></i>+1 (888) 456-7890</p>
+            </section>
+
+            <section id="login" class="card-section">
+                <a href="#home" class="btn-back" data-section="home"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                <h2>Sign In</h2>
+                <form id="login-form">
+                    <div class="mb-3">
+                        <input type="email" class="form-control" name="email" placeholder="Email Address" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" class="form-control" name="password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Sign In</button>
+                    <div class="mt-3" id="login-alert-container" style="display: none;"></div>
+                    <div class="mt-3">
+                        <a href="#signup" class="d-block text-primary" data-section="signup">New User? Register</a>
+                        <a href="#forgot-password" class="d-block text-primary" data-section="forgot-password">Forgot Password?</a>
+                    </div>
+                </form>
+            </section>
+
+            <section id="signup" class="card-section">
+                <a href="#home" class="btn-back" data-section="home"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                <h2>Register</h2>
+                <form id="signup-form" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <input type="email" class="form-control" id="signup-email" name="email" placeholder="Email Address" required>
+                        <div class="invalid-feedback">Please provide a valid email.</div>
+                    </div>
+                    <div id="otp-section" style="display: none;">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" id="otp" name="otp" placeholder="Enter OTP" required>
+                            <div class="invalid-feedback">Please enter the OTP.</div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                            <div class="invalid-feedback">Please provide a password.</div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" class="form-control" id="confirm-password" name="confirmPassword" placeholder="Confirm Password" required>
+                            <div class="invalid-feedback">Passwords do not match.</div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">Request OTP</button>
+                    <div id="alert-container" class="mt-3" style="display: none;"></div>
+                </form>
+            </section>
+
+            <section id="forgot-password" class="card-section">
+                <a href="#home" class="btn-back" data-section="home"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                <h2>Forgot Password</h2>
+                <form id="forgot-password-form" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <input type="email" class="form-control" id="forgot-email" name="email" placeholder="Email Address" required>
+                        <div class="invalid-feedback">Please provide a valid email.</div>
+                    </div>
+                    <div id="reset-otp-section" style="display: none;">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" id="reset-otp" name="otp" placeholder="Enter OTP" required>
+                            <div class="invalid-feedback">Please enter the OTP.</div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" class="form-control" id="new-password" name="newPassword" placeholder="New Password" required>
+                            <div class="invalid-feedback">Please provide a new password.</div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" class="form-control" id="confirm-new-password" name="confirmNewPassword" placeholder="Confirm New Password" required>
+                            <div class="invalid-feedback">Passwords do not match.</div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="reset-btn">Request OTP</button>
+                    <div id="reset-alert-container" class="mt-3" style="display: none;"></div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container text-center">
+            <p>© 2025 RecruitPro. All Rights Reserved.</p>
+            <div class="social-links">
+                <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+                <a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            'use strict';
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const sections = document.querySelectorAll(".card-section");
+            const links = document.querySelectorAll(".nav-link, .btn-back, .d-block, .btn-primary[data-section], .btn-outline-primary[data-section]");
+            const backendUrl = "http://localhost:3000";
+
+            function showSection(id) {
+                sections.forEach(section => {
+                    section.classList.remove("active");
+                    section.style.opacity = "0";
+                    section.style.transform = "translateY(20px)";
+                });
+                const targetSection = document.getElementById(id);
+                if (targetSection) {
+                    targetSection.classList.add("active");
+                    setTimeout(() => {
+                        targetSection.style.opacity = "1";
+                        targetSection.style.transform = "translateY(0)";
+                    }, 50);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    if (id === 'jobs') loadJobs();
+                }
+            }
+
+            links.forEach(link => {
+                link.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute("href")?.substring(1) || this.getAttribute("data-section");
+                    if (targetId) showSection(targetId);
+                });
+            });
+
+            async function loadJobs() {
+                try {
+                    const response = await axios.get(`${backendUrl}/api/jobs`);
+                    const jobs = response.data;
+                    const jobsList = document.getElementById('jobs-list');
+                    jobsList.innerHTML = jobs.length ? '' : '<p>No jobs or internships available currently.</p>';
+                    jobs.forEach(job => {
+                        jobsList.innerHTML += `
+                            <div class="col-12 col-md-6 job-card">
+                                <div class="card p-3">
+                                    <h5>${job.title} (${job.type})</h5>
+                                    <p>${job.description.substring(0, 100)}...</p>
+                                    <p><small>Posted: ${new Date(job.created_at).toLocaleDateString()}</small></p>
+                                </div>
+                            </div>`;
+                    });
+                } catch (error) {
+                    console.error('Error loading jobs:', error);
+                }
+            }
+
+            document.getElementById("login-form").addEventListener("submit", async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const email = formData.get('email');
+                const password = formData.get('password');
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const alertContainer = document.getElementById("login-alert-container");
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Signing In...';
+
+                try {
+                    const response = await axios.post(`${backendUrl}/api/login`, { email, password });
+                    showAlert(alertContainer, "success", response.data.message);
+                    if (response.data.success) {
+                        localStorage.setItem('accessToken', response.data.accessToken);
+                        localStorage.setItem('refreshToken', response.data.refreshToken);
+                        localStorage.setItem('role', response.data.role);
+                        localStorage.setItem('id', response.data.role === 'admin' ? response.data.adminId : response.data.userId);
+                        localStorage.setItem('email', email);
+                        setTimeout(() => {
+                            if (response.data.role === 'admin') {
+                                window.location.replace("admin-dashboard.html");
+                            } else {
+                                window.location.replace("user-dashboard.html");
+                            }
+                        }, 1000);
+                    }
+                } catch (error) {
+                    showAlert(alertContainer, "danger", error.response?.data?.message || "Login failed.");
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Sign In';
+                }
+            });
+
+            const signupForm = document.getElementById("signup-form");
+            const otpSection = document.getElementById("otp-section");
+            const submitBtn = document.getElementById("submit-btn");
+            const alertContainer = document.getElementById("alert-container");
+            let signupEmail = "";
+
+            signupForm.addEventListener("submit", async function(e) {
+                e.preventDefault();
+                const form = this;
+                const email = document.getElementById("signup-email").value;
+                const otp = document.getElementById("otp").value;
+                const password = document.getElementById("password").value;
+                const confirmPassword = document.getElementById("confirm-password").value;
+
+                if (!otp && !password && !confirmPassword) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Sending...';
+                    try {
+                        const response = await axios.post(`${backendUrl}/api/signup`, { email });
+                        showAlert(alertContainer, "success", response.data.message);
+                        if (response.data.message === 'OTP sent to your email!') {
+                            signupEmail = email;
+                            otpSection.style.display = "block";
+                            submitBtn.textContent = 'Create Account';
+                        }
+                    } catch (error) {
+                        showAlert(alertContainer, "danger", error.response?.data?.message || "Failed to send OTP.");
+                    } finally {
+                        submitBtn.disabled = false;
+                    }
+                } else {
+                    if (password !== confirmPassword) {
+                        showAlert(alertContainer, "danger", "Passwords do not match.");
+                        return;
+                    }
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Creating...';
+                    try {
+                        const response = await axios.post(`${backendUrl}/api/verify-otp`, {
+                            email: signupEmail,
+                            otp,
+                            password,
+                            confirmPassword
+                        });
+                        showAlert(alertContainer, "success", response.data.message);
+                        if (response.data.success) {
+                            setTimeout(() => {
+                                form.reset();
+                                otpSection.style.display = "none";
+                                submitBtn.textContent = "Request OTP";
+                                showSection("login");
+                            }, 2000);
+                        }
+                    } catch (error) {
+                        showAlert(alertContainer, "danger", error.response?.data?.message || "Account creation failed.");
+                    } finally {
+                        submitBtn.disabled = false;
+                    }
+                }
+            });
+
+            const forgotForm = document.getElementById("forgot-password-form");
+            const resetOtpSection = document.getElementById("reset-otp-section");
+            const resetBtn = document.getElementById("reset-btn");
+            const resetAlertContainer = document.getElementById("reset-alert-container");
+            let resetEmail = "";
+
+            forgotForm.addEventListener("submit", async function(e) {
+                e.preventDefault();
+                const email = document.getElementById("forgot-email").value;
+                const otp = document.getElementById("reset-otp").value;
+                const newPassword = document.getElementById("new-password").value;
+                const confirmNewPassword = document.getElementById("confirm-new-password").value;
+
+                if (!otp && !newPassword && !confirmNewPassword) {
+                    resetBtn.disabled = true;
+                    resetBtn.textContent = 'Sending...';
+                    try {
+                        const response = await axios.post(`${backendUrl}/api/reset-password`, { email });
+                        showAlert(resetAlertContainer, "success", response.data.message);
+                        resetEmail = email;
+                        resetOtpSection.style.display = "block";
+                        resetBtn.textContent = 'Reset Password';
+                    } catch (error) {
+                        showAlert(resetAlertContainer, "danger", error.response?.data?.message || "Failed to send OTP.");
+                    } finally {
+                        resetBtn.disabled = false;
+                    }
+                } else {
+                    if (newPassword !== confirmNewPassword) {
+                        showAlert(resetAlertContainer, "danger", "Passwords do not match.");
+                        return;
+                    }
+                    resetBtn.disabled = true;
+                    resetBtn.textContent = 'Resetting...';
+                    try {
+                        const response = await axios.post(`${backendUrl}/api/reset-password/verify`, {
+                            email: resetEmail,
+                            otp,
+                            newPassword,
+                            confirmNewPassword
+                        });
+                        showAlert(resetAlertContainer, "success", response.data.message);
+                        if (response.data.success) {
+                            setTimeout(() => {
+                                forgotForm.reset();
+                                resetOtpSection.style.display = "none";
+                                resetBtn.textContent = "Request OTP";
+                                showSection("login");
+                            }, 2000);
+                        }
+                    } catch (error) {
+                        showAlert(resetAlertContainer, "danger", error.response?.data?.message || "Password reset failed.");
+                    } finally {
+                        resetBtn.disabled = false;
+                    }
+                }
+            });
+
+            function showAlert(container, type, message) {
+                container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+                container.style.display = "block";
+                setTimeout(() => container.style.display = "none", 5000);
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

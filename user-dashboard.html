@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>User Dashboard - RecruitPro</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        :root {
+            --primary: #2a3f73;
+            --secondary: #00aaff;
+            --light: #f5f7fa;
+            --dark: #1f2a44;
+            --sidebar-bg: linear-gradient(180deg, #2a3f73, #1f2a44);
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --hover: #00d4ff;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--light);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            color: white;
+            padding: 1.5rem 0.5rem;
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+        .sidebar.collapsed {
+            width: 70px;
+        }
+        .sidebar .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar .navbar-brand img {
+            width: 40px;
+            height: 40px;
+            margin-right: 8px;
+            object-fit: contain;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar .navbar-brand img:hover {
+            opacity: 0.8;
+        }
+        .sidebar.collapsed .navbar-brand img {
+            margin-right: 0;
+        }
+        .sidebar .navbar-brand span {
+            transition: opacity 0.3s ease;
+        }
+        .sidebar.collapsed .navbar-brand span {
+            opacity: 0;
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.75rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--hover);
+            transform: translateX(5px);
+        }
+        .sidebar .nav-link i {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+        .sidebar.collapsed .nav-link span {
+            display: none;
+        }
+        .sidebar-toggle {
+            position: absolute;
+            top: 1rem;
+            right: -40px;
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .main-content {
+            margin-left: 260px;
+            padding: 1.5rem;
+            min-height: 100vh;
+            background: var(--light);
+            transition: margin-left 0.3s ease;
+        }
+        .main-content.collapsed {
+            margin-left: 70px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--secondary);
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 0;
+        }
+        .profile-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .profile-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .profile-btn img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--secondary);
+            margin-right: 0.5rem;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        .profile-btn img:hover {
+            opacity: 0.8;
+        }
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 0.5rem 0;
+            min-width: 120px;
+            z-index: 1001;
+        }
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+        .dropdown-item:hover {
+            background: var(--light);
+            color: var(--secondary);
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card h2 {
+            font-size: 1.3rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, var(--secondary), #007bff);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+        .stat-card h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        .stat-card .display-6 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        .btn-primary {
+            background: var(--secondary);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: #007bff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 170, 255, 0.3);
+        }
+        .btn-success {
+            background: var(--success);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        .btn-warning {
+            background: var(--warning);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        }
+        .btn-danger {
+            background: var(--danger);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+        .form-control {
+            border-radius: 6px;
+            padding: 0.7rem;
+            border: 1px solid #e0e6ed;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 8px rgba(0, 170, 255, 0.2);
+            outline: none;
+        }
+        .table {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            color: var(--secondary);
+            background: none;
+            border: 1px solid var(--secondary);
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        .btn-back:hover {
+            background: var(--secondary);
+            color: white;
+        }
+        .job-card {
+            margin-bottom: 1rem;
+        }
+        .job-card .card {
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            transition: box-shadow 0.3s;
+        }
+        .job-card .card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .profile-image-large {
+            max-width: 300px;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 3px solid var(--secondary);
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            .sidebar.collapsed {
+                width: 0;
+            }
+            .main-content {
+                margin-left: 70px;
+            }
+            .main-content.collapsed {
+                margin-left: 0;
+            }
+            .header h1 {
+                font-size: 1.2rem;
+            }
+            .profile-btn img {
+                width: 30px;
+                height: 30px;
+            }
+            .card {
+                padding: 1rem;
+            }
+            .card h2 {
+                font-size: 1.1rem;
+            }
+            .stat-card .display-6 {
+                font-size: 1.5rem;
+            }
+            .table {
+                font-size: 0.9rem;
+            }
+            .btn-primary, .btn-success, .btn-warning, .btn-danger {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .form-control {
+                font-size: 0.8rem;
+            }
+            .profile-image-large {
+                max-width: 200px;
+                max-height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+        <a class="navbar-brand" href="#">
+            <img src="recruitpro-logo.png" alt="RecruitPro Logo" onerror="this.src='https://via.placeholder.com/40?text=Logo';">
+            <span>RecruitPro</span>
+        </a>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#dashboard" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#jobs" data-section="jobs">
+                    <i class="fas fa-briefcase"></i> <span>Jobs & Interns</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#applications" data-section="applications">
+                    <i class="fas fa-users"></i> <span>My Applications</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#resume" data-section="resume">
+                    <i class="fas fa-file-alt"></i> <span>Create Resume</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#profile" data-section="profile">
+                    <i class="fas fa-user-cog"></i> <span>Profile</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="logoutSidebar">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <h1>Welcome, <span id="userName"></span></h1>
+            <div class="profile-dropdown">
+                <button class="profile-btn" id="profileBtn">
+                    <img id="userProfileImg" src="https://via.placeholder.com/40?text=User" alt="Profile">
+                </button>
+                <div class="dropdown-menu" id="dropdownMenu" style="display: none;">
+                    <a href="#profile" class="dropdown-item" data-section="profile">Edit Profile</a>
+                    <a href="#" class="dropdown-item" id="logoutHeader">Logout</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="dashboard" class="card section active">
+            <a href="index.html#home" class="btn-back"><i class="fas fa-arrow-left me-2"></i>Back</a>
+            <h2>User Dashboard</h2>
+            <p class="lead">Explore opportunities and manage your applications.</p>
+            <div class="row">
+                <div class="col-12 col-md-6">
+                    <div class="stat-card">
+                        <h3>Available Opportunities</h3>
+                        <p class="display-6" id="totalJobs">0</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="stat-card">
+                        <h3>Your Applications</h3>
+                        <p class="display-6" id="totalApplications">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="jobs" class="card section" style="display: none;">
+            <a href="#dashboard" class="btn-back" data-section="dashboard"><i class="fas fa-arrow-left me-2"></i>Back</a>
+            <h2>Available Jobs & Internships</h2>
+            <div id="jobs-list" class="row"></div>
+        </div>
+
+        <div id="applications" class="card section" style="display: none;">
+            <a href="#dashboard" class="btn-back" data-section="dashboard"><i class="fas fa-arrow-left me-2"></i>Back</a>
+            <h2>My Applications</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Opportunity Type</th>
+                        <th>Title</th>
+                        <th>Resume</th>
+                        <th>Availability</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="applications-table"></tbody>
+            </table>
+        </div>
+
+        <div id="resume" class="card section" style="display: none;">
+            <a href="#dashboard" class="btn-back" data-section="dashboard"><i class="fas fa-arrow-left me-2"></i>Back</a>
+            <h2>Create Professional Resume</h2>
+            <form id="resume-form">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="resume-name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="resume-name" name="name" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="resume-email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="resume-email" name="email" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="resume-phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="resume-phone" name="phone" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="resume-address" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="resume-address" name="address">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="resume-objective" class="form-label">Career Objective</label>
+                    <textarea class="form-control" id="resume-objective" name="objective" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="resume-education" class="form-label">Education</label>
+                    <textarea class="form-control" id="resume-education" name="education" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="resume-experience" class="form-label">Work Experience</label>
+                    <textarea class="form-control" id="resume-experience" name="experience" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="resume-trainings" class="form-label">Trainings/Certifications</label>
+                    <textarea class="form-control" id="resume-trainings" name="trainings" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="resume-portfolio" class="form-label">Portfolio Link</label>
+                    <input type="url" class="form-control" id="resume-portfolio" name="portfolio">
+                </div>
+                <div class="mb-3">
+                    <label for="resume-projects" class="form-label">Projects</label>
+                    <textarea class="form-control" id="resume-projects" name="projects" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="resume-skills" class="form-label">Skills</label>
+                    <textarea class="form-control" id="resume-skills" name="skills" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="resume-activities" class="form-label">Extra-Curricular Activities</label>
+                    <textarea class="form-control" id="resume-activities" name="activities" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="resume-additional" class="form-label">Additional Details</label>
+                    <textarea class="form-control" id="resume-additional" name="additional" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Resume</button>
+                <div id="resume-alert" class="mt-3" style="display: none;"></div>
+            </form>
+            <h3 class="mt-4">Your Resumes</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="resumes-table"></tbody>
+            </table>
+        </div>
+
+        <div id="profile" class="card section" style="display: none;">
+            <a href="#dashboard" class="btn-back" data-section="dashboard"><i class="fas fa-arrow-left me-2"></i>Back</a>
+            <h2>Your Profile</h2>
+            <div class="mb-3 text-center">
+                <img id="profile-image" class="img-fluid rounded-circle border border-primary" src="https://via.placeholder.com/150?text=User" alt="Profile Image" style="width: 150px; height: 150px; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#profileImageModal">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <p id="profile-name" class="form-control-static"></p>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <p id="profile-email" class="form-control-static"></p>
+            </div>
+            <button type="button" class="btn btn-primary" id="edit-profile-btn">Edit Profile</button>
+            <form id="update-profile-form" class="needs-validation mt-3" novalidate style="display: none;">
+                <div class="mb-3">
+                    <label for="edit-name" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="edit-name" name="name">
+                </div>
+                <div class="mb-3">
+                    <label for="edit-email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="edit-email" name="email">
+                </div>
+                <div class="mb-3">
+                    <label for="edit-password" class="form-label">New Password</label>
+                    <input type="password" class="form-control" id="edit-password" name="password">
+                </div>
+                <div class="mb-3">
+                    <label for="profile-pic" class="form-label">Profile Picture</label>
+                    <input type="file" class="form-control" id="profile-pic" name="profilePic" accept="image/*">
+                </div>
+                <button type="submit" class="btn btn-primary">Update Profile</button>
+                <button type="button" class="btn btn-secondary ms-2" id="cancel-edit">Cancel</button>
+                <div id="profile-alert" class="mt-3" style="display: none;"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Modifying Resume -->
+    <div class="modal fade" id="modifyResumeModal" tabindex="-1" aria-labelledby="modifyResumeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modifyResumeModalLabel">Modify Resume</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="modify-resume-form">
+                        <input type="hidden" id="modify-resume-id" name="id">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="modify-resume-name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="modify-resume-name" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="modify-resume-email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="modify-resume-email" name="email" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="modify-resume-phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="modify-resume-phone" name="phone" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="modify-resume-address" class="form-label">Address</label>
+                                <input type="text" class="form-control" id="modify-resume-address" name="address">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modify-resume-objective" class="form-label">Career Objective</label>
+                            <textarea class="form-control" id="modify-resume-objective" name="objective" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modify-resume-education" class="form-label">Education</label>
+                            <textarea class="form-control" id="modify-resume-education" name="education" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modify-resume-experience" class="form-label">Work Experience</label>
+                            <textarea class="form-control" id="modify-resume-experience" name="experience" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modify-resume-trainings" class="form-label">Trainings/Certifications</label>
+                            <textarea class="form-control" id="modify-resume-trainings" name="trainings" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modify-resume-portfolio" class="form-label">Portfolio Link</label>
+                            <input type="url" class="form-control" id="modify-resume-portfolio" name="portfolio">
+                        </div>
+                        <div class="mb-3">
+                            <label for="modify-resume-projects" class="form-label">Projects</label>
+                            <textarea class="form-control" id="modify-resume-projects" name="projects" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modify-resume-skills" class="form-label">Skills</label>
+                            <textarea class="form-control" id="modify-resume-skills" name="skills" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modify-resume-activities" class="form-label">Extra-Curricular Activities</label>
+                            <textarea class="form-control" id="modify-resume-activities" name="activities" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modify-resume-additional" class="form-label">Additional Details</label>
+                            <textarea class="form-control" id="modify-resume-additional" name="additional" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Resume</button>
+                        <div id="modify-resume-alert" class="mt-3" style="display: none;"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Viewing Large Profile Image -->
+    <div class="modal fade" id="profileImageModal" tabindex="-1" aria-labelledby="profileImageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="profileImageModalLabel">Profile Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="large-profile-image" class="profile-image-large" src="https://via.placeholder.com/150?text=User" alt="Large Profile Image">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const backendUrl = "http://localhost:3000";
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const userId = localStorage.getItem('id');
+            const token = localStorage.getItem('accessToken');
+            const userEmail = localStorage.getItem('email');
+
+            if (!userId || !token) {
+                window.location.replace("index.html#login");
+                return;
+            }
+
+            document.getElementById('profile-email').textContent = userEmail;
+            loadProfile();
+
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('collapsed');
+            });
+
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+
+            function showSection(id) {
+                sections.forEach(section => {
+                    section.style.display = 'none';
+                    section.classList.remove('active');
+                });
+                navLinks.forEach(link => link.classList.remove('active'));
+                const targetSection = document.getElementById(id);
+                const targetLink = document.querySelector(`.nav-link[data-section="${id}"]`);
+                if (targetSection && targetLink) {
+                    targetSection.style.display = 'block';
+                    targetSection.classList.add('active');
+                    targetLink.classList.add('active');
+                    if (id === 'dashboard') fetchDashboardStats();
+                    if (id === 'jobs') loadJobs();
+                    if (id === 'applications') loadApplications();
+                    if (id === 'resume') {
+                        loadResumes();
+                        prefillResumeForm();
+                    }
+                    if (id === 'profile') loadProfile();
+                }
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sectionId = this.getAttribute('data-section');
+                    if (sectionId && sectionId !== 'logoutSidebar') showSection(sectionId);
+                });
+            });
+
+            document.querySelectorAll('.btn-back').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('data-section') || 'index.html#home';
+                    if (targetId.startsWith('index.html')) {
+                        window.location.href = targetId;
+                    } else {
+                        showSection(targetId);
+                    }
+                });
+            });
+
+            const profileBtn = document.querySelector('.profile-btn');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            profileBtn.addEventListener('click', () => {
+                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+            });
+
+            async function handleLogout() {
+                try {
+                    await axios.post(`${backendUrl}/api/logout`, {}, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    localStorage.clear();
+                    window.location.replace("index.html#home");
+                } catch (error) {
+                    showAlert(document.getElementById('profile-alert'), 'danger', "Logout failed: " + (error.response?.data?.message || "Server error"));
+                }
+            }
+
+            document.getElementById("logoutSidebar").addEventListener("click", handleLogout);
+            document.getElementById("logoutHeader").addEventListener("click", handleLogout);
+
+            async function fetchDashboardStats() {
+                try {
+                    const [jobsRes, appsRes] = await Promise.all([
+                        axios.get(`${backendUrl}/api/jobs`, { headers: { Authorization: `Bearer ${token}`, id: userId } }),
+                        axios.get(`${backendUrl}/api/user/applications`, { headers: { Authorization: `Bearer ${token}`, id: userId } })
+                    ]);
+                    document.getElementById('totalJobs').textContent = jobsRes.data.length;
+                    document.getElementById('totalApplications').textContent = appsRes.data.length;
+                } catch (error) {
+                    console.error('Stats error:', error);
+                }
+            }
+
+            async function loadJobs() {
+                try {
+                    const response = await axios.get(`${backendUrl}/api/jobs`, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    const jobs = response.data;
+                    const jobsList = document.getElementById('jobs-list');
+                    jobsList.innerHTML = jobs.length ? '' : '<p>No jobs or internships available currently.</p>';
+                    jobs.forEach(job => {
+                        jobsList.innerHTML += `
+                            <div class="col-12 col-md-6 job-card">
+                                <div class="card p-3">
+                                    <h5>${job.title} (${job.type})</h5>
+                                    <p>${job.description.substring(0, 100)}...</p>
+                                    <p><small>Posted: ${new Date(job.created_at).toLocaleDateString()}</small></p>
+                                    <button class="btn btn-primary btn-sm apply-btn" data-job-id="${job.id}" data-job-title="${job.title}" data-job-type="${job.type}">Apply Now</button>
+                                </div>
+                            </div>`;
+                    });
+
+                    document.querySelectorAll('.apply-btn').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const jobId = this.getAttribute('data-job-id');
+                            const jobTitle = this.getAttribute('data-job-title');
+                            const jobType = this.getAttribute('data-job-type');
+                            showApplicationModal(jobId, jobTitle, jobType);
+                        });
+                    });
+                } catch (error) {
+                    console.error('Jobs error:', error);
+                }
+            }
+
+            async function showApplicationModal(jobId, jobTitle, jobType) {
+                let hasGeneratedResume = false;
+                let resumes = [];
+                try {
+                    const response = await axios.get(`${backendUrl}/api/resumes`, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    resumes = response.data;
+                    hasGeneratedResume = resumes.length > 0;
+                } catch (error) {
+                    console.error('Error checking for generated resume:', error);
+                }
+
+                const modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.innerHTML = `
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Apply for ${jobTitle} (${jobType})</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="application-form-${jobId}">
+                                    <div class="mb-3">
+                                        <label for="full-name-${jobId}" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="full-name-${jobId}" name="fullName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="availability-${jobId}" class="form-label">Availability</label>
+                                        <textarea class="form-control" id="availability-${jobId}" name="availability" rows="3" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Resume Option</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="resumeOption-${jobId}" id="upload-resume-${jobId}" value="upload" checked>
+                                            <label class="form-check-label" for="upload-resume-${jobId}">
+                                                Upload Resume
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="resumeOption-${jobId}" id="use-generated-${jobId}" value="generated" ${!hasGeneratedResume ? 'disabled' : ''}>
+                                            <label class="form-check-label" for="use-generated-${jobId}">
+                                                Use Generated Resume ${!hasGeneratedResume ? '(Create a resume first)' : ''}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3" id="resume-upload-section-${jobId}">
+                                        <label for="resume-${jobId}" class="form-label">Upload Resume</label>
+                                        <input type="file" class="form-control" id="resume-${jobId}" name="resume" accept=".pdf" required>
+                                    </div>
+                                    <div class="mb-3" id="resume-select-section-${jobId}" style="display: none;">
+                                        <label for="resume-id-${jobId}" class="form-label">Select Generated Resume</label>
+                                        <select class="form-control" id="resume-id-${jobId}" name="resumeId">
+                                            ${resumes.map(resume => `<option value="${resume.id}">${resume.name} (${new Date(resume.created_at).toLocaleDateString()})</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Submit Application</button>
+                                    <div id="application-alert-${jobId}" class="mt-3" style="display: none;"></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                const bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+
+                const form = document.getElementById(`application-form-${jobId}`);
+                const uploadSection = document.getElementById(`resume-upload-section-${jobId}`);
+                const selectSection = document.getElementById(`resume-select-section-${jobId}`);
+                const useGeneratedRadio = document.getElementById(`use-generated-${jobId}`);
+                const uploadResumeInput = document.getElementById(`resume-${jobId}`);
+
+                useGeneratedRadio.addEventListener('change', () => {
+                    if (useGeneratedRadio.checked) {
+                        uploadSection.style.display = 'none';
+                        selectSection.style.display = 'block';
+                        uploadResumeInput.removeAttribute('required');
+                    }
+                });
+
+                document.getElementById(`upload-resume-${jobId}`).addEventListener('change', () => {
+                    if (document.getElementById(`upload-resume-${jobId}`).checked) {
+                        uploadSection.style.display = 'block';
+                        selectSection.style.display = 'none';
+                        uploadResumeInput.setAttribute('required', 'required');
+                    }
+                });
+
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const useGenerated = useGeneratedRadio.checked;
+
+                    if (!useGenerated && !formData.get('resume')) {
+                        showAlert(document.getElementById(`application-alert-${jobId}`), 'danger', 'Please upload a resume.');
+                        return;
+                    }
+
+                    formData.append('opportunityId', jobId);
+                    formData.append('useGeneratedResume', useGenerated);
+
+                    try {
+                        const response = await axios.post(`${backendUrl}/api/applications`, formData, {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                id: userId,
+                                'Content-Type': 'multipart/form-data'
+                            }
+                        });
+                        showAlert(document.getElementById(`application-alert-${jobId}`), 'success', response.data.message);
+                        setTimeout(() => bsModal.hide(), 2000);
+                        loadApplications();
+                    } catch (error) {
+                        showAlert(document.getElementById(`application-alert-${jobId}`), 'danger', error.response?.data?.message || 'Failed to submit application.');
+                    }
+                });
+
+                modal.addEventListener('hidden.bs.modal', () => {
+                    modal.remove();
+                });
+            }
+
+            async function loadApplications() {
+                try {
+                    const response = await axios.get(`${backendUrl}/api/user/applications`, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    const applications = response.data;
+                    const tableBody = document.getElementById('applications-table');
+                    tableBody.innerHTML = applications.length ? '' : '<tr><td colspan="5">No applications found.</td></tr>';
+                    applications.forEach(app => {
+                        tableBody.innerHTML += `
+                            <tr>
+                                <td>${app.type}</td>
+                                <td>${app.job_title}</td>
+                                <td>${app.resume_path ? `<a href="${backendUrl}${app.resume_path}" target="_blank">View Resume</a>` : 'Generated Resume'}</td>
+                                <td>${app.availability}</td>
+                                <td><span class="badge ${app.status === 'accepted' ? 'bg-success' : app.status === 'rejected' ? 'bg-danger' : 'bg-warning'}">${app.status}</span></td>
+                            </tr>`;
+                    });
+                } catch (error) {
+                    console.error('Applications error:', error);
+                }
+            }
+
+            function showAlert(element, type, message) {
+                element.style.display = 'block';
+                element.className = `alert alert-${type} mt-3`;
+                element.textContent = message;
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 3000);
+            }
+
+            async function prefillResumeForm() {
+                try {
+                    const response = await axios.get(`${backendUrl}/api/user/profile`, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    const user = response.data;
+                    document.getElementById('resume-name').value = user.name || '';
+                    document.getElementById('resume-email').value = user.email || '';
+                } catch (error) {
+                    console.error('Prefill resume form error:', error);
+                }
+            }
+
+            document.getElementById('resume-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const resumeData = Object.fromEntries(formData);
+
+                try {
+                    const response = await axios.post(`${backendUrl}/api/resumes`, resumeData, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    showAlert(document.getElementById('resume-alert'), 'success', response.data.message);
+                    e.target.reset();
+                    prefillResumeForm();
+                    loadResumes();
+                } catch (error) {
+                    showAlert(document.getElementById('resume-alert'), 'danger', error.response?.data?.message || 'Failed to create resume.');
+                }
+            });
+
+            async function loadResumes() {
+                try {
+                    const response = await axios.get(`${backendUrl}/api/resumes`, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    const resumes = response.data;
+                    const tableBody = document.getElementById('resumes-table');
+                    tableBody.innerHTML = resumes.length ? '' : '<tr><td colspan="6">No resumes found.</td></tr>';
+                    resumes.forEach(resume => {
+                        tableBody.innerHTML += `
+                            <tr>
+                                <td>${resume.name}</td>
+                                <td>${resume.email}</td>
+                                <td>${resume.phone}</td>
+                                <td>${resume.address || 'N/A'}</td>
+                                <td>${new Date(resume.created_at).toLocaleDateString()}</td>
+                                <td>
+                                    <button class="btn btn-success btn-sm download-resume" data-resume-id="${resume.id}">Download</button>
+                                    <button class="btn btn-warning btn-sm modify-resume ms-1" data-resume-id="${resume.id}">Modify</button>
+                                    <button class="btn btn-danger btn-sm delete-resume ms-1" data-resume-id="${resume.id}">Delete</button>
+                                </td>
+                            </tr>`;
+                    });
+
+                    document.querySelectorAll('.download-resume').forEach(button => {
+                        button.addEventListener('click', async function() {
+                            const resumeId = this.getAttribute('data-resume-id');
+                            try {
+                                const response = await axios.get(`${backendUrl}/api/resume/download/${resumeId}`, {
+                                    headers: { Authorization: `Bearer ${token}`, id: userId },
+                                    responseType: 'blob'
+                                });
+                                const url = window.URL.createObjectURL(new Blob([response.data]));
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.setAttribute('download', `resume_${resumeId}.pdf`);
+                                document.body.appendChild(link);
+                                link.click();
+                                link.remove();
+                            } catch (error) {
+                                showAlert(document.getElementById('resume-alert'), 'danger', 'Failed to download resume.');
+                            }
+                        });
+                    });
+
+                    document.querySelectorAll('.modify-resume').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const resumeId = this.getAttribute('data-resume-id');
+                            const resume = resumes.find(r => r.id === resumeId);
+                            if (resume) {
+                                document.getElementById('modify-resume-id').value = resume.id;
+                                document.getElementById('modify-resume-name').value = resume.name;
+                                document.getElementById('modify-resume-email').value = resume.email;
+                                document.getElementById('modify-resume-phone').value = resume.phone;
+                                document.getElementById('modify-resume-address').value = resume.address || '';
+                                document.getElementById('modify-resume-objective').value = resume.objective || '';
+                                document.getElementById('modify-resume-education').value = resume.education;
+                                document.getElementById('modify-resume-experience').value = resume.experience || '';
+                                document.getElementById('modify-resume-trainings').value = resume.trainings || '';
+                                document.getElementById('modify-resume-portfolio').value = resume.portfolio || '';
+                                document.getElementById('modify-resume-projects').value = resume.projects || '';
+                                document.getElementById('modify-resume-skills').value = resume.skills;
+                                document.getElementById('modify-resume-activities').value = resume.activities || '';
+                                document.getElementById('modify-resume-additional').value = resume.additional || '';
+                                const modifyModal = new bootstrap.Modal(document.getElementById('modifyResumeModal'));
+                                modifyModal.show();
+                            }
+                        });
+                    });
+
+                    document.querySelectorAll('.delete-resume').forEach(button => {
+                        button.addEventListener('click', async function() {
+                            const resumeId = this.getAttribute('data-resume-id');
+                            if (confirm('Are you sure you want to delete this resume?')) {
+                                try {
+                                    const response = await axios.delete(`${backendUrl}/api/resumes/${resumeId}`, {
+                                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                                    });
+                                    showAlert(document.getElementById('resume-alert'), 'success', response.data.message);
+                                    loadResumes();
+                                } catch (error) {
+                                    showAlert(document.getElementById('resume-alert'), 'danger', error.response?.data?.message || 'Failed to delete resume.');
+                                }
+                            }
+                        });
+                    });
+                } catch (error) {
+                    console.error('Resumes error:', error);
+                }
+            }
+
+            document.getElementById('modify-resume-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const resumeData = Object.fromEntries(formData);
+                const resumeId = resumeData.id;
+
+                try {
+                    const response = await axios.put(`${backendUrl}/api/resumes/${resumeId}`, resumeData, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    showAlert(document.getElementById('modify-resume-alert'), 'success', response.data.message);
+                    const modifyModal = bootstrap.Modal.getInstance(document.getElementById('modifyResumeModal'));
+                    modifyModal.hide();
+                    loadResumes();
+                } catch (error) {
+                    showAlert(document.getElementById('modify-resume-alert'), 'danger', error.response?.data?.message || 'Failed to update resume.');
+                }
+            });
+
+            async function loadProfile() {
+                try {
+                    const response = await axios.get(`${backendUrl}/api/user/profile`, {
+                        headers: { Authorization: `Bearer ${token}`, id: userId }
+                    });
+                    const user = response.data;
+                    document.getElementById('userName').textContent = user.name || 'User';
+                    document.getElementById('profile-name').textContent = user.name || 'Not set';
+                    document.getElementById('profile-email').textContent = user.email;
+                    if (user.profile_pic) {
+                        const profileImageUrl = `${backendUrl}${user.profile_pic}`;
+                        document.getElementById('userProfileImg').src = profileImageUrl;
+                        document.getElementById('profile-image').src = profileImageUrl;
+                        document.getElementById('large-profile-image').src = profileImageUrl;
+                    }
+                    document.getElementById('edit-name').value = user.name || '';
+                    document.getElementById('edit-email').value = user.email;
+                } catch (error) {
+                    console.error('Profile error:', error);
+                }
+            }
+
+            document.getElementById('edit-profile-btn').addEventListener('click', () => {
+                document.getElementById('update-profile-form').style.display = 'block';
+                document.getElementById('edit-profile-btn').style.display = 'none';
+            });
+
+            document.getElementById('cancel-edit').addEventListener('click', () => {
+                document.getElementById('update-profile-form').style.display = 'none';
+                document.getElementById('edit-profile-btn').style.display = 'block';
+            });
+
+            document.getElementById('update-profile-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                try {
+                    const response = await axios.post(`${backendUrl}/api/update-profile`, formData, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            id: userId,
+                            role: 'user',
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
+                    showAlert(document.getElementById('profile-alert'), 'success', response.data.message);
+                    document.getElementById('update-profile-form').style.display = 'none';
+                    document.getElementById('edit-profile-btn').style.display = 'block';
+                    loadProfile();
+                } catch (error) {
+                    showAlert(document.getElementById('profile-alert'), 'danger', error.response?.data?.message || 'Failed to update profile.');
+                }
+            });
+
+            fetchDashboardStats();
+        });
+    </script>
+</body>
+</html>
