@@ -1,0 +1,13 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "This project is a fully functional online recruitment platform designed to streamline job searches and applications. The system features an Admin Dashboard and a Job Seeker Dashboard, making the recruitment process simple and effective for both employers and job seekers.",
+  "main": "check_password.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
